@@ -76,7 +76,7 @@ def split_script_into_chunks(text: str, max_chunk_size: int = 12000) -> list[str
     return chunks
 
 
-def call_gemini_api(model: str, api_key: str, system_instruction: str, user_prompt: str) -> dict:
+def call_gemini_api(model: str, api_key: str, system_instruction: str, user_prompt: str):
     """
     Direct REST call to Gemini generateContent endpoint.
     POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
@@ -115,7 +115,7 @@ def stream_story_generation(script_text: str, keys: list[dict], model: str, chun
     total_chunks = len(chunks)
 
     if total_chunks == 0:
-        yield f"data: {json.dumps({'type': 'error', 'message': 'कृपया रूपांतरण के लिए कोई स्क्रिप्ट दर्ज करें।'}, ensure_ascii=False)}\n\n"
+        yield f"data: {json.dumps({'type': 'error', 'message': 'Please enter a video script or transcript to convert.'}, ensure_ascii=False)}\n\n"
         return
 
     accumulated_story = ""
@@ -129,15 +129,16 @@ def stream_story_generation(script_text: str, keys: list[dict], model: str, chun
         # Build prompt with context chaining for chunk > 0
         if chunk_idx == 0:
             user_prompt = (
-                "यहाँ मूल स्क्रिप्ट का पहला भाग है। कृपया इसे दिए गए नियमों के अनुसार केवल देवनागरी हिंदी में, "
-                "बिना किसी शीर्षक, परिचय या वक्ता नाम के, एक निरंतर पुस्तक कहानी के रूप में लिखें:\n\n"
+                "Here is the first part of the original script. Please write it as a continuous book narrative "
+                "purely in flowing Hindi (Devanagari) prose according to the rules, without headings, intro, or speaker labels:\n\n"
                 f"---\n{chunk_text}\n---"
             )
         else:
             previous_context = accumulated_story.strip()[-600:].strip()
             user_prompt = (
-                f'पिछली कड़ी का अंतिम संदर्भ (केवल निरंतरता बनाए रखने के लिए - इसे दोहराएं नहीं, इसके ठीक आगे से लिखना शुरू करें):\n"...{previous_context}"\n\n'
-                "अब मूल स्क्रिप्ट का अगला भाग प्रस्तुत है। उपरोक्त सभी नियमों का कड़ाई से पालन करते हुए बिना किसी शीर्षक, उपशीर्षक, परिचय या पुनरावृत्ति के कहानी को आगे जारी रखें:\n\n"
+                f'End of the previous installment (for context continuity only - do not repeat this, continue the story immediately from here):\n"...{previous_context}"\n\n'
+                "Now here is the next part of the original script. Continue the story in flowing Hindi (Devanagari) prose "
+                "strictly adhering to all rules without any headings, subheadings, partitions, intro, or repetition:\n\n"
                 f"---\n{chunk_text}\n---"
             )
 
@@ -149,8 +150,8 @@ def stream_story_generation(script_text: str, keys: list[dict], model: str, chun
             key_id = key_info["id"]
             api_key = key_info["key"]
 
-            status_msg = f"भाग {chunk_idx + 1}/{total_chunks} लिखा जा रहा है... (API Key {key_id} का उपयोग)"
-            details_msg = f"प्रयास संख्या {attempts + 1}/{max_attempts_per_chunk}" if attempts > 0 else ""
+            status_msg = f"Writing Part {chunk_idx + 1}/{total_chunks}... (Using API Key {key_id})"
+            details_msg = f"Attempt {attempts + 1}/{max_attempts_per_chunk}" if attempts > 0 else ""
             percent = int((chunk_idx / total_chunks) * 100)
 
             yield f"data: {json.dumps({'type': 'status', 'text': status_msg, 'details': details_msg, 'percent': percent}, ensure_ascii=False)}\n\n"
@@ -174,12 +175,12 @@ def stream_story_generation(script_text: str, keys: list[dict], model: str, chun
                     next_key = keys[active_key_index % len(keys)]
 
                     if attempts < max_attempts_per_chunk:
-                        retry_status = f"कुंजी {key_id} पर त्रुटि ({err_msg})। कुंजी {next_key['id']} से पुनः प्रयास..."
-                        yield f"data: {json.dumps({'type': 'status', 'text': retry_status, 'details': '1.2 सेकंड की प्रतीक्षा...', 'percent': percent}, ensure_ascii=False)}\n\n"
+                        retry_status = f"Key {key_id} failed ({err_msg}). Retrying with Key {next_key['id']}..."
+                        yield f"data: {json.dumps({'type': 'status', 'text': retry_status, 'details': 'Waiting 1.2s...', 'percent': percent}, ensure_ascii=False)}\n\n"
                         time.sleep(1.2)
                         continue
                     else:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'सभी API कुंजियों से 2 चक्रों के बाद भी प्रयास विफल: {err_msg}'}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'All API keys failed after 2 passes: {err_msg}'}, ensure_ascii=False)}\n\n"
                         return
 
                 # Parse JSON
@@ -190,18 +191,18 @@ def stream_story_generation(script_text: str, keys: list[dict], model: str, chun
                 generated_text = parts[0].get("text", "").strip()
 
                 if not generated_text:
-                    finish_reason = candidate.get("finishReason", "अज्ञात")
+                    finish_reason = candidate.get("finishReason", "Unknown")
                     attempts += 1
                     active_key_index = (active_key_index + 1) % len(keys)
                     next_key = keys[active_key_index % len(keys)]
 
                     if attempts < max_attempts_per_chunk:
-                        retry_status = f"कुंजी {key_id} से रिक्त उत्तर प्राप्त हुआ ({finish_reason})। कुंजी {next_key['id']} से पुनः प्रयास..."
-                        yield f"data: {json.dumps({'type': 'status', 'text': retry_status, 'details': '1.2 सेकंड की प्रतीक्षा...', 'percent': percent}, ensure_ascii=False)}\n\n"
+                        retry_status = f"Key {key_id} returned empty response ({finish_reason}). Retrying with Key {next_key['id']}..."
+                        yield f"data: {json.dumps({'type': 'status', 'text': retry_status, 'details': 'Waiting 1.2s...', 'percent': percent}, ensure_ascii=False)}\n\n"
                         time.sleep(1.2)
                         continue
                     else:
-                        yield f"data: {json.dumps({'type': 'error', 'message': 'API से रिक्त उत्तर प्राप्त हुआ (संभवतः सुरक्षा फ़िल्टर के कारण)।'}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'error', 'message': 'API returned empty response (possibly blocked by safety filters).'}, ensure_ascii=False)}\n\n"
                         return
 
                 # Successful chunk generation
@@ -222,15 +223,15 @@ def stream_story_generation(script_text: str, keys: list[dict], model: str, chun
                 next_key = keys[active_key_index % len(keys)]
 
                 if attempts < max_attempts_per_chunk:
-                    retry_status = f"कुंजी {key_id} से संपर्क विफल ({str(e)})। कुंजी {next_key['id']} से पुनः प्रयास..."
-                    yield f"data: {json.dumps({'type': 'status', 'text': retry_status, 'details': '1.2 सेकंड की प्रतीक्षा...', 'percent': percent}, ensure_ascii=False)}\n\n"
+                    retry_status = f"Key {key_id} connection failed ({str(e)}). Retrying with Key {next_key['id']}..."
+                    yield f"data: {json.dumps({'type': 'status', 'text': retry_status, 'details': 'Waiting 1.2s...', 'percent': percent}, ensure_ascii=False)}\n\n"
                     time.sleep(1.2)
                 else:
-                    yield f"data: {json.dumps({'type': 'error', 'message': f'सभी API कुंजियों से संपर्क विफल रहा: {str(e)}'}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'Connection failed on all API keys: {str(e)}'}, ensure_ascii=False)}\n\n"
                     return
 
         if not chunk_success:
-            yield f"data: {json.dumps({'type': 'error', 'message': 'इस खंड के लिए सभी उपलब्ध कुंजियों का कोटा समाप्त हो गया है या वे अमान्य हैं।'}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': 'All available API keys exhausted or quota exceeded for this chunk.'}, ensure_ascii=False)}\n\n"
             return
 
     # Done
@@ -265,10 +266,10 @@ def generate_story():
             valid_keys.append({"id": item.get("id", len(valid_keys) + 1), "key": k})
 
     if not valid_keys:
-        return jsonify({"error": "कृपया सेटिंग्स में कम से कम एक वैध Gemini API कुंजी (API Key) दर्ज करें।"}), 400
+        return jsonify({"error": "Please enter at least one valid Gemini API key in Settings."}), 400
 
     if not script_text:
-        return jsonify({"error": "कृपया रूपांतरण के लिए मूल वीडियो स्क्रिप्ट या ट्रांसक्रिप्ट दर्ज करें।"}), 400
+        return jsonify({"error": "Please enter a video script or transcript to convert."}), 400
 
     return Response(
         stream_story_generation(script_text, valid_keys, model, chunk_size, system_prompt),

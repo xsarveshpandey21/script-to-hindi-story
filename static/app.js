@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Script to Hindi Story - Frontend Client (Python Backend Integration)
+   Script to Hindi Story - Frontend Client (English Interface)
    ========================================================================== */
 
 const DEFAULT_SYSTEM_PROMPT = `1. Write only in Hindi (Devanagari). Do not skip any important event, fact, name, date or dialogue.
@@ -113,9 +113,9 @@ function updateSettingsSummary() {
   const model = DOM.modelSelect.value || 'gemini-2.5-flash';
   const chunkSize = parseInt(DOM.chunkSizeInput.value, 10) || 12000;
   const keyStatus = keys.length === 0
-    ? 'कोई कुंजी दर्ज नहीं'
-    : `${keys.length} सक्रिय कुंजी (Key ${keys.map(k => k.id).join(', ')})`;
-  DOM.settingsSummary.textContent = `मॉडल: ${model} | ${keyStatus} | खंड: ${chunkSize.toLocaleString('en-IN')} वर्ण`;
+    ? 'No API keys configured'
+    : `${keys.length} active key(s) (Key ${keys.map(k => k.id).join(', ')})`;
+  DOM.settingsSummary.textContent = `Model: ${model} | ${keyStatus} | Chunk: ${chunkSize.toLocaleString('en-US')} chars`;
 }
 
 function showError(msg) {
@@ -135,12 +135,12 @@ function updateScriptCounts() {
   const words = countWords(text);
   const chunkSize = parseInt(DOM.chunkSizeInput.value, 10) || 12000;
 
-  DOM.scriptCharCount.textContent = `वर्ण: ${charLen.toLocaleString('en-IN')}`;
-  DOM.scriptWordCount.textContent = `शब्द: ${words.toLocaleString('en-IN')}`;
+  DOM.scriptCharCount.textContent = `Characters: ${charLen.toLocaleString('en-US')}`;
+  DOM.scriptWordCount.textContent = `Words: ${words.toLocaleString('en-US')}`;
 
   if (charLen > 0) {
     const est = Math.max(1, Math.ceil(charLen / chunkSize));
-    DOM.scriptChunksEstimate.textContent = `अनुमानित खंड: ${est}`;
+    DOM.scriptChunksEstimate.textContent = `Estimated Chunks: ${est}`;
     DOM.scriptChunksEstimate.hidden = false;
     DOM.scriptChunkDivider.hidden = false;
   } else {
@@ -155,9 +155,9 @@ function updateStoryCounts() {
   const words = countWords(text);
   const paragraphs = countParagraphs(text);
 
-  DOM.storyCharCount.textContent = `वर्ण: ${charLen.toLocaleString('en-IN')}`;
-  DOM.storyWordCount.textContent = `शब्द: ${words.toLocaleString('en-IN')}`;
-  DOM.storyParagraphsCount.textContent = `पैराग्राफ: ${paragraphs}`;
+  DOM.storyCharCount.textContent = `Characters: ${charLen.toLocaleString('en-US')}`;
+  DOM.storyWordCount.textContent = `Words: ${words.toLocaleString('en-US')}`;
+  DOM.storyParagraphsCount.textContent = `Paragraphs: ${paragraphs}`;
 
   const hasContent = charLen > 0;
   DOM.copyBtn.disabled = !hasContent || state.isGenerating;
@@ -175,7 +175,7 @@ function escapeHtml(str) {
 
 function renderStoryOutput() {
   if (!state.accumulatedStory.trim()) {
-    DOM.storyOutput.innerHTML = '<p class="placeholder-text">कथा यहाँ दिखाई देगी। ऊपर अपनी स्क्रिप्ट पेस्ट करें और "हिंदी कहानी बनाएं" पर क्लिक करें।</p>';
+    DOM.storyOutput.innerHTML = '<p class="placeholder-text">Your generated Hindi story will appear here. Paste a script above and click "Generate Hindi Story".</p>';
     updateStoryCounts();
     return;
   }
@@ -194,14 +194,14 @@ function renderStoryOutput() {
 function openSettings() {
   DOM.settingsBody.hidden = false;
   DOM.settingsToggle.setAttribute('aria-expanded', 'true');
-  DOM.settingsToggleBtn.textContent = 'सेटिंग्स छुपाएं';
+  DOM.settingsToggleBtn.textContent = 'Close Settings';
   setStored(STORAGE_KEYS.SETTINGS_OPEN, 'true');
 }
 
 function closeSettings() {
   DOM.settingsBody.hidden = true;
   DOM.settingsToggle.setAttribute('aria-expanded', 'false');
-  DOM.settingsToggleBtn.textContent = 'सेटिंग्स खोलें';
+  DOM.settingsToggleBtn.textContent = 'Open Settings';
   setStored(STORAGE_KEYS.SETTINGS_OPEN, 'false');
 }
 
@@ -219,14 +219,14 @@ async function startStoryGeneration() {
 
   const scriptText = DOM.scriptInput.value.trim();
   if (!scriptText) {
-    showError('कृपया रूपांतरण के लिए मूल वीडियो स्क्रिप्ट या ट्रांसक्रिप्ट दर्ज करें।');
+    showError('Please enter a video script or transcript to convert.');
     DOM.scriptInput.focus();
     return;
   }
 
   const keys = getActiveApiKeys();
   if (keys.length === 0) {
-    showError('कृपया सेटिंग्स में कम से कम एक वैध Gemini API कुंजी (API Key) दर्ज करें।');
+    showError('Please enter at least one valid Gemini API key in Settings.');
     openSettings();
     DOM.apiKey1.focus();
     return;
@@ -248,7 +248,7 @@ async function startStoryGeneration() {
   DOM.progressContainer.hidden = false;
   DOM.progressBarFill.style.width = '0%';
   DOM.progressPercentText.textContent = '0%';
-  DOM.progressStatusText.textContent = 'प्रक्रिया प्रारंभ हो रही है...';
+  DOM.progressStatusText.textContent = 'Initializing process...';
   DOM.progressDetailsText.textContent = '';
   renderStoryOutput();
 
@@ -269,7 +269,7 @@ async function startStoryGeneration() {
     });
 
     if (!response.ok) {
-      let errText = `सर्वर त्रुटि: HTTP ${response.status}`;
+      let errText = `Server error: HTTP ${response.status}`;
       try {
         const errJson = await response.json();
         if (errJson && (errJson.error || errJson.message)) {
@@ -302,7 +302,7 @@ async function startStoryGeneration() {
           const evt = JSON.parse(jsonStr);
 
           if (evt.type === 'init') {
-            DOM.progressStatusText.textContent = `कुल ${evt.total_chunks} भाग तैयार किए जाएंगे...`;
+            DOM.progressStatusText.textContent = `Generating ${evt.total_chunks} parts...`;
           } else if (evt.type === 'status') {
             DOM.progressStatusText.textContent = evt.text;
             if (evt.details) DOM.progressDetailsText.textContent = evt.details;
@@ -333,8 +333,8 @@ async function startStoryGeneration() {
           } else if (evt.type === 'done') {
             DOM.progressBarFill.style.width = '100%';
             DOM.progressPercentText.textContent = '100%';
-            DOM.progressStatusText.textContent = `कहानी सफलतापूर्वक तैयार कर ली गई है! (कुल ${evt.total_chunks} भाग)`;
-            DOM.progressDetailsText.textContent = 'सभी पैराग्राफ पुस्तक शैली में संयोजित हैं।';
+            DOM.progressStatusText.textContent = `Story generated successfully! (${evt.total_chunks} parts total)`;
+            DOM.progressDetailsText.textContent = 'All paragraphs formatted seamlessly in book narrative style.';
           }
         } catch (parseErr) {
           if (parseErr.message && !parseErr.message.includes('JSON')) {
@@ -346,12 +346,12 @@ async function startStoryGeneration() {
 
   } catch (err) {
     if (err.name === 'AbortError') {
-      DOM.progressStatusText.textContent = 'प्रक्रिया रोक दी गई।';
-      DOM.progressDetailsText.textContent = 'अब तक तैयार की गई कथा नीचे सुरक्षित है।';
+      DOM.progressStatusText.textContent = 'Process stopped by user.';
+      DOM.progressDetailsText.textContent = 'Story generated so far is preserved below.';
     } else {
-      showError(err.message || 'कहानी तैयार करने में अप्रत्याशित त्रुटि उत्पन्न हुई।');
-      DOM.progressStatusText.textContent = 'प्रक्रिया में त्रुटि आई।';
-      DOM.progressDetailsText.textContent = 'कृपया त्रुटि संदेश देखकर पुनः प्रयास करें।';
+      showError(err.message || 'An unexpected error occurred while generating story.');
+      DOM.progressStatusText.textContent = 'Generation encountered an error.';
+      DOM.progressDetailsText.textContent = 'Please check the error notification above.';
     }
   } finally {
     state.isGenerating = false;
@@ -387,15 +387,15 @@ async function copyStoryToClipboard() {
     }
 
     const orig = DOM.copyBtn.textContent;
-    DOM.copyBtn.textContent = 'कॉपी हो गया!';
-    DOM.copyStatusMsg.textContent = 'कथा क्लिपबोर्ड में कॉपी कर ली गई है।';
+    DOM.copyBtn.textContent = 'Copied!';
+    DOM.copyStatusMsg.textContent = 'Story copied to clipboard!';
 
     setTimeout(() => {
       DOM.copyBtn.textContent = orig;
       DOM.copyStatusMsg.textContent = '';
     }, 2500);
   } catch (err) {
-    showError('क्लिपबोर्ड में कॉपी करने में विफल: ' + err.message);
+    showError('Failed to copy to clipboard: ' + err.message);
   }
 }
 
@@ -414,7 +414,7 @@ function downloadStoryFile() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (err) {
-    showError('फ़ाइल डाउनलोड करने में त्रुटि: ' + err.message);
+    showError('Error downloading file: ' + err.message);
   }
 }
 
@@ -428,7 +428,7 @@ async function loadSampleScript() {
       hideError();
     }
   } catch (err) {
-    showError('नमूना स्क्रिप्ट लोड करने में असमर्थ: ' + err.message);
+    showError('Failed to load sample script: ' + err.message);
   }
 }
 
@@ -509,10 +509,10 @@ function initApp() {
       if (input) {
         if (input.type === 'password') {
           input.type = 'text';
-          btn.textContent = 'छिपाएं';
+          btn.textContent = 'Hide';
         } else {
           input.type = 'password';
-          btn.textContent = 'दिखाएं';
+          btn.textContent = 'Show';
         }
       }
     });
@@ -548,4 +548,3 @@ if (document.readyState === 'loading') {
 } else {
   initApp();
 }
-

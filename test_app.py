@@ -57,12 +57,12 @@ class TestScriptToHindiStory(unittest.TestCase):
         # Missing keys
         resp1 = client.post('/api/generate_story', json={'script': 'Hello', 'keys': []})
         self.assertEqual(resp1.status_code, 400)
-        self.assertIn("API कुंजी", resp1.get_json()["error"])
+        self.assertIn("valid Gemini API key", resp1.get_json()["error"])
 
         # Missing script
         resp2 = client.post('/api/generate_story', json={'script': '', 'keys': [{'id': 1, 'key': 'test'}]})
         self.assertEqual(resp2.status_code, 400)
-        self.assertIn("स्क्रिप्ट", resp2.get_json()["error"])
+        self.assertIn("script or transcript", resp2.get_json()["error"])
 
     @patch('time.sleep')
     @patch('app.call_gemini_api')
@@ -114,8 +114,8 @@ class TestScriptToHindiStory(unittest.TestCase):
         event_str = "".join(events)
 
         # Assert Key 1 failed and Key 2 was retried
-        self.assertIn("कुंजी 1 पर त्रुटि", event_str)
-        self.assertIn("कुंजी 2 से पुनः प्रयास", event_str)
+        self.assertIn("Key 1 failed", event_str)
+        self.assertIn("Retrying with Key 2", event_str)
         self.assertIn("भाग 1 की कहानी", event_str)
         self.assertIn("भाग 2 की कहानी", event_str)
 

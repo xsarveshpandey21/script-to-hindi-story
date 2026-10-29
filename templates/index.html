@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Script to Hindi Story | स्क्रिप्ट से हिंदी कहानी</title>
+  <title>Script to Hindi Story</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Noto+Serif+Devanagari:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     <!-- Header / Title -->
     <header class="app-header">
       <h1 class="app-title">Script to Hindi Story</h1>
-      <p class="app-subtitle">वीडियो स्क्रिप्ट व ट्रांसक्रिप्ट को पुस्तक शैली में धाराप्रवाह हिंदी कहानी में बदलें</p>
+      <p class="app-subtitle">Transform video scripts and transcripts into flowing book-style Hindi prose</p>
     </header>
 
     <main class="app-container">
@@ -22,11 +22,11 @@
       <section class="card settings-card" id="settings-card">
         <div class="card-header settings-header" id="settings-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="settings-body">
           <div class="header-text-group">
-            <h2 class="card-title">सेटिंग्स (Settings)</h2>
-            <span class="settings-summary" id="settings-summary">लोड हो रहा है...</span>
+            <h2 class="card-title">Settings</h2>
+            <span class="settings-summary" id="settings-summary">Loading...</span>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm toggle-btn" id="settings-toggle-btn" aria-label="सेटिंग्स बदलें">
-            सेटिंग्स खोलें
+          <button type="button" class="btn btn-secondary btn-sm toggle-btn" id="settings-toggle-btn" aria-label="Toggle settings">
+            Open Settings
           </button>
         </div>
 
@@ -35,15 +35,15 @@
 
           <!-- API Keys Section -->
           <div class="settings-section">
-            <h3 class="section-title">Gemini API कुंजियां (Round-Robin & Retry)</h3>
-            <p class="section-desc">कम से कम एक API कुंजी दर्ज करें। यदि कोई कुंजी सीमा पार (Quota/429) करती है या विफल होती है, तो अगली कुंजी पर स्वतः प्रयास होगा। ये कुंजियां केवल आपके ब्राउज़र (localStorage) में सुरक्षित रहती हैं।</p>
+            <h3 class="section-title">Gemini API Keys (Round-Robin &amp; Auto-Retry)</h3>
+            <p class="section-desc">Enter at least one Gemini API key. If a key hits rate/quota limits (429) or fails, the app automatically retries with the next key. Keys are saved securely in your browser's localStorage only.</p>
             
             <div class="input-grid">
               <!-- Key 1 -->
               <div class="form-group">
                 <div class="label-row">
                   <label for="api-key-1">API Key 1</label>
-                  <button type="button" class="text-link-btn" data-toggle-visibility="api-key-1">दिखाएं</button>
+                  <button type="button" class="text-link-btn" data-toggle-visibility="api-key-1">Show</button>
                 </div>
                 <input type="password" id="api-key-1" class="form-input" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
               </div>
@@ -51,8 +51,8 @@
               <!-- Key 2 -->
               <div class="form-group">
                 <div class="label-row">
-                  <label for="api-key-2">API Key 2 (वैकल्पिक)</label>
-                  <button type="button" class="text-link-btn" data-toggle-visibility="api-key-2">दिखाएं</button>
+                  <label for="api-key-2">API Key 2 (Optional)</label>
+                  <button type="button" class="text-link-btn" data-toggle-visibility="api-key-2">Show</button>
                 </div>
                 <input type="password" id="api-key-2" class="form-input" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
               </div>
@@ -60,8 +60,8 @@
               <!-- Key 3 -->
               <div class="form-group">
                 <div class="label-row">
-                  <label for="api-key-3">API Key 3 (वैकल्पिक)</label>
-                  <button type="button" class="text-link-btn" data-toggle-visibility="api-key-3">दिखाएं</button>
+                  <label for="api-key-3">API Key 3 (Optional)</label>
+                  <button type="button" class="text-link-btn" data-toggle-visibility="api-key-3">Show</button>
                 </div>
                 <input type="password" id="api-key-3" class="form-input" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
               </div>
@@ -71,33 +71,33 @@
           <!-- Model & Chunk Settings -->
           <div class="settings-grid">
             <div class="form-group">
-              <label for="model-select">Gemini मॉडल चुनें</label>
+              <label for="model-select">Choose Gemini Model</label>
               <select id="model-select" class="form-select">
-                <option value="gemini-2.5-flash">gemini-2.5-flash (डिफ़ॉल्ट / अनुशंसित)</option>
-                <option value="gemini-2.5-pro">gemini-2.5-pro (गहन कथा)</option>
-                <option value="gemini-2.0-flash">gemini-2.0-flash (तीव्र गति)</option>
+                <option value="gemini-2.5-flash">gemini-2.5-flash (Default / Recommended)</option>
+                <option value="gemini-2.5-pro">gemini-2.5-pro (In-depth Narrative)</option>
+                <option value="gemini-2.0-flash">gemini-2.0-flash (Fast)</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="chunk-size">स्क्रिप्ट खंड आकार (Chunk Size - वर्ण)</label>
+              <label for="chunk-size">Script Chunk Size (Characters)</label>
               <input type="number" id="chunk-size" class="form-input" min="2000" max="30000" step="500" value="12000">
-              <span class="field-help">डिफ़ॉल्ट: 12,000 वर्ण (पैराग्राफ सीमा पर सुरक्षित विभाजन)</span>
+              <span class="field-help">Default: 12,000 characters (splits safely at paragraph boundaries)</span>
             </div>
           </div>
 
           <!-- System Prompt Section -->
           <div class="form-group prompt-group">
             <div class="label-row">
-              <label for="system-prompt">सिस्टम निर्देश (System Prompt - AI के नियम)</label>
-              <button type="button" class="btn btn-secondary btn-sm" id="reset-prompt-btn">डिफ़ॉल्ट पर रीसेट करें</button>
+              <label for="system-prompt">System Instructions (Core AI Rules)</label>
+              <button type="button" class="btn btn-secondary btn-sm" id="reset-prompt-btn">Reset to Default</button>
             </div>
             <textarea id="system-prompt" class="form-textarea prompt-textarea" rows="6" spellcheck="false"></textarea>
-            <span class="field-help">ये 5 नियम AI को शुद्ध हिंदी व निरंतर पुस्तक कथा शैली बनाए रखने का निर्देश देते हैं।</span>
+            <span class="field-help">These 5 rules instruct the AI to write flowing Hindi prose in continuous book narrative style.</span>
           </div>
 
           <div class="settings-footer">
-            <button type="button" class="btn btn-secondary btn-sm" id="close-settings-btn">सेटिंग्स सहेजें व बंद करें</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="close-settings-btn">Save &amp; Close Settings</button>
           </div>
         </div>
       </section>
@@ -106,44 +106,44 @@
       <section class="card script-card">
         <div class="card-header">
           <div class="header-text-group">
-            <h2 class="card-title">मूल वीडियो स्क्रिप्ट / ट्रांसक्रिप्ट</h2>
-            <span class="card-hint">अपनी स्क्रिप्ट पेस्ट करें। वक्ता के नाम, समय (timestamps) आदि स्वतः हटा दिए जाएंगे।</span>
+            <h2 class="card-title">Original Video Script / Transcript</h2>
+            <span class="card-hint">Paste your script below. Speaker names, timestamps, and audio cues will be removed automatically.</span>
           </div>
           <div class="script-header-actions">
-            <button type="button" class="btn btn-secondary btn-sm" id="load-sample-btn">नमूना स्क्रिप्ट लोड करें</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="clear-script-btn">साफ़ करें</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="load-sample-btn">Load Sample Script</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="clear-script-btn">Clear</button>
           </div>
         </div>
 
         <div class="card-body">
           <div class="form-group">
-            <label for="script-input" class="sr-only">वीडियो स्क्रिप्ट या ट्रांसक्रिप्ट</label>
-            <textarea id="script-input" class="form-textarea script-textarea" rows="11" placeholder="यहाँ अपनी वीडियो स्क्रिप्ट या ट्रांसक्रिप्ट पेस्ट करें... (उदा. Narrator: In the winter of 1888... [00:01:23] [Music])"></textarea>
+            <label for="script-input" class="sr-only">Video script or transcript</label>
+            <textarea id="script-input" class="form-textarea script-textarea" rows="11" placeholder="Paste your video script or transcript here... (e.g. Narrator: In the winter of 1888... [00:01:23] [Music])"></textarea>
           </div>
 
           <div class="meta-row">
             <div class="counts" id="script-counts">
-              <span id="script-char-count">वर्ण: 0</span>
+              <span id="script-char-count">Characters: 0</span>
               <span class="count-divider">|</span>
-              <span id="script-word-count">शब्द: 0</span>
+              <span id="script-word-count">Words: 0</span>
               <span class="count-divider" id="script-chunk-divider" hidden>|</span>
-              <span id="script-chunks-estimate" hidden>अनुमानित खंड: 1</span>
+              <span id="script-chunks-estimate" hidden>Estimated Chunks: 1</span>
             </div>
           </div>
 
-          <!-- Hindi Error Notification Banner -->
+          <!-- Error Notification Banner -->
           <div id="error-banner" class="alert-banner alert-error" role="alert" hidden>
             <div class="alert-content">
-              <strong class="alert-title">त्रुटि:</strong>
+              <strong class="alert-title">Error:</strong>
               <span id="error-message"></span>
             </div>
-            <button type="button" class="alert-dismiss-btn" id="error-dismiss-btn" aria-label="त्रुटि संदेश बंद करें">बंद करें</button>
+            <button type="button" class="alert-dismiss-btn" id="error-dismiss-btn" aria-label="Dismiss error message">Dismiss</button>
           </div>
 
           <!-- Status & Live Progress Indicator -->
           <div id="progress-container" class="progress-box" aria-live="polite" hidden>
             <div class="progress-header">
-              <span class="progress-status" id="progress-status-text">प्रक्रिया प्रारंभ हो रही है...</span>
+              <span class="progress-status" id="progress-status-text">Process initializing...</span>
               <span class="progress-percent" id="progress-percent-text">0%</span>
             </div>
             <div class="progress-bar-track">
@@ -155,10 +155,10 @@
           <!-- Action Buttons -->
           <div class="actions-row">
             <button type="button" class="btn btn-primary" id="generate-btn">
-              हिंदी कहानी बनाएं (Generate Hindi Story)
+              Generate Hindi Story
             </button>
             <button type="button" class="btn btn-secondary" id="stop-btn" disabled>
-              रोकें (Stop)
+              Stop
             </button>
           </div>
         </div>
@@ -168,33 +168,33 @@
       <section class="card result-card" id="result-card">
         <div class="card-header result-header">
           <div class="header-text-group">
-            <h2 class="card-title">हिंदी कहानी (Hindi Story)</h2>
-            <span class="card-hint">पुस्तक शैली में निरंतर पैराग्राफ, बिना किसी विभाजन या शीर्षक के</span>
+            <h2 class="card-title">Hindi Story (Devanagari)</h2>
+            <span class="card-hint">Continuous book-style prose narrative without headings or partitions</span>
           </div>
           <div class="result-actions">
             <button type="button" class="btn btn-secondary btn-sm" id="copy-btn" disabled>
-              प्रतिलिपि बनाएं (Copy)
+              Copy Story
             </button>
             <button type="button" class="btn btn-secondary btn-sm" id="download-btn" disabled>
-              डाउनलोड करें (.txt)
+              Download (.txt)
             </button>
           </div>
         </div>
 
         <div class="card-body">
           <div class="story-output-wrapper">
-            <div id="story-output" class="story-prose" tabindex="0" role="region" aria-label="तैयार की गई हिंदी कहानी">
-              <p class="placeholder-text">कथा यहाँ दिखाई देगी। ऊपर अपनी स्क्रिप्ट पेस्ट करें और "हिंदी कहानी बनाएं" पर क्लिक करें।</p>
+            <div id="story-output" class="story-prose" tabindex="0" role="region" aria-label="Generated Hindi story">
+              <p class="placeholder-text">Your generated Hindi story will appear here. Paste a script above and click "Generate Hindi Story".</p>
             </div>
           </div>
 
           <div class="meta-row meta-bottom">
             <div class="counts" id="story-counts">
-              <span id="story-char-count">वर्ण: 0</span>
+              <span id="story-char-count">Characters: 0</span>
               <span class="count-divider">|</span>
-              <span id="story-word-count">शब्द: 0</span>
+              <span id="story-word-count">Words: 0</span>
               <span class="count-divider">|</span>
-              <span id="story-paragraphs-count">पैराग्राफ: 0</span>
+              <span id="story-paragraphs-count">Paragraphs: 0</span>
             </div>
             <div id="copy-status-msg" class="copy-status" aria-live="polite"></div>
           </div>
@@ -203,11 +203,10 @@
     </main>
 
     <footer class="app-footer">
-      <p>Script to Hindi Story &bull; Python + HTML &amp; CSS &bull; Google Gemini API &bull; सभी कुंजियां स्थानीय ब्राउज़र में सुरक्षित</p>
+      <p>Script to Hindi Story &bull; Python + HTML &amp; CSS &bull; Powered by Google Gemini API &bull; API keys stored in your browser only</p>
     </footer>
   </div>
 
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
-

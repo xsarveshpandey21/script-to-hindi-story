@@ -1,85 +1,103 @@
-# Script to Hindi Story (Python + HTML & CSS)
+# Script to Hindi Story
 
-एक शांत, पुस्तक-शैली (Brown & White theme) वेब ऐप्लिकेशन जो वीडियो स्क्रिप्ट / ट्रांसक्रिप्ट को Google Gemini API के माध्यम से धाराप्रवाह देवनागरी हिंदी कथा में रूपांतरित करता है।
+A calm, bookish web application (Brown & White theme) that transforms video scripts and transcripts into flowing book-style Hindi (Devanagari) prose using the Google Gemini API.
 
-संपूर्ण बैकएंड और लॉजिक **Python (Flask)** में लिखा गया है, तथा यूजर इंटरफेस **HTML** और **CSS** में तैयार किया गया है।
+The backend application logic is powered by **Python (Flask)**, with the frontend user interface crafted in clean **HTML & CSS**.
 
 ---
 
-## परियोजना संरचना (Project Architecture)
+## Project Structure
 
 ```
 c:\Users\sarve\Downloads\Search\
-├── app.py                  # मुख्य Python ऐप्लिकेशन (चंकिंग, Gemini REST कॉल, राउंड-रॉबिन की रोटेशन, SSE स्ट्रीमिंग)
-├── sample_script.py        # 3,000+ शब्दों की ऐतिहासिक नमूना स्क्रिप्ट
-├── test_app.py             # 8 स्वचालित यूनिट टेस्ट (चंकिंग, की-रोटेशन, राउट्स)
-├── requirements.txt        # Python आवश्यकताएं (Flask, requests)
+├── app.py                  # Main Python application (intelligent chunking, Gemini REST client, key rotation, SSE streaming)
+├── sample_script.py        # 3,011-word historical sample script for acceptance testing
+├── test_app.py             # 8 automated unit tests (chunking, key rotation, API endpoints)
+├── requirements.txt        # Python dependencies (Flask, requests)
+├── README.md               # Documentation and usage guide
+├── .gitignore              # Standard Python gitignore
 ├── templates/
-│   └── index.html          # स्वच्छ, पठनीय HTML इंटरफेस (Brown & White theme)
+│   └── index.html          # Clean HTML interface (Brown & White reading theme)
 └── static/
-    ├── styles.css          # सख्त ब्राउन और व्हाइट पैलेट CSS, Noto Serif Devanagari फोंट
-    └── app.js              # ब्राउज़र क्लाइंट (localStorage, SSE स्ट्रीम श्रोता, कॉपी व डाउनलोड)
+    ├── styles.css          # Palette-strict CSS with Noto Serif Devanagari typography
+    └── app.js              # Browser client (localStorage persistence, SSE stream listener, copy & download)
 ```
 
 ---
 
-## मुख्य विशेषताएं (Key Features)
+## Core Features
 
-1. **Python बैकएंड लॉजिक (`app.py`):**
-   - **बुद्धिमान स्क्रिप्ट विभाजन (`split_script_into_chunks`):** 12,000 वर्णों की सीमा में पैराग्राफ (`\n\n`) या वाक्य सीमाओं (`।`, `.`, `!`, `?`) पर सुरक्षित रूप से विभाजन।
-   - **राउंड-रॉबिन API कुंजी रोटेशन व स्वतः पुनः प्रयास:** 3 Gemini API कुंजियों का बारी-बारी से उपयोग। यदि कोई कुंजी `400` (अमान्य कुंजी), `429` (दर/कोटा सीमा), `5xx` (सर्वर त्रुटि) या रिक्त उत्तर देती है, तो 1.2 सेकंड के अंतराल के बाद स्वतः अगली कुंजी पर प्रयास होता है (अधिकतम 2 चक्र / passes)।
-   - **संदर्भ निरंतरता (Context Chaining):** पहले खंड के बाद प्रत्येक खंड के लिए पिछली कड़ी के अंतिम ~600 वर्णों को संदर्भ के रूप में भेजा जाता है ताकि बिना किसी पुनरावृत्ति या शीर्षक के कहानी आगे बढ़े।
-   - **सर्वर-सेंट इवेंट्स (Server-Sent Events - SSE):** `/api/generate_story` एंडपॉइंट के माध्यम से ब्राउज़र को लाइव प्रगति व खंड दर खंड आउटपुट स्ट्रीम किया जाता है।
+1. **Python Backend Logic (`app.py`):**
+   - **Intelligent Script Chunker (`split_script_into_chunks`):** Respects sentence and paragraph (`\n\n`) boundaries within a configurable limit (default: 12,000 characters) without breaking words.
+   - **Multi-Key Round-Robin & Auto-Retry:** Uses up to 3 Gemini API keys round-robin. If a key returns `400` (invalid key), `429` (rate/quota limit), `5xx` (server error), or an empty response, the app automatically retries with the next key with a 1.2s delay (up to 2 complete passes over all keys).
+   - **Context Chaining for Multi-Chunk Scripts:** For every chunk after the first, sends the last ~600 characters of the accumulated Hindi story as context, instructing Gemini to continue smoothly without duplicating content or adding section titles.
+   - **Live Streaming via Server-Sent Events (SSE):** The `/api/generate_story` endpoint streams live progress updates and chunk outputs directly to the browser.
 
-2. **ब्राउन और व्हाइट थीम UI (HTML & CSS):**
-   - **सख्त रंग पैलेट:**
-     - Espresso Brown `#3E2723` (शीर्षक, मुख्य बटन)
-     - Warm Brown `#6D4C41` (द्वितीयक टेक्स्ट, बॉर्डर, होवर)
-     - Soft Tan `#D7C4B5` (विभाजक रेखा, इनपुट बॉर्डर)
-     - Cream White `#FAF6F1` (पृष्ठ पृष्ठभूमि)
-     - Pure White `#FFFFFF` (कार्ड, टेक्स्टएरिया, परिणाम बॉक्स)
-   - **टाइपोग्राफी:**
-     - हिंदी कहानी आउटपुट: `Noto Serif Devanagari` (18.5px, line-height 2.0, max-width 70ch)
-     - UI लेबल: `Hind` / System sans
-   - **शून्य इमोजी (Zero Emojis in UI):** शांत, गंभीर, पुस्तक जैसा पठनीय अनुभव।
+2. **Brown & White Theme UI (HTML & CSS):**
+   - **Strict Color Palette:**
+     - Espresso Brown `#3E2723` (headings, primary buttons)
+     - Warm Brown `#6D4C41` (secondary text, borders, hover states)
+     - Soft Tan `#D7C4B5` (dividers, input borders)
+     - Cream White `#FAF6F1` (page background)
+     - Pure White `#FFFFFF` (cards, textareas, reading panel)
+   - **Typography:**
+     - Hindi Story output: `Noto Serif Devanagari` (18.5px, line-height: 2.0, max-width: 70ch)
+     - UI labels: `Hind` & system sans-serif
+   - **Zero Emojis:** Calm, distraction-free reading aesthetic.
 
-3. **सुरक्षा एवं स्थानीय संग्रहण (Security & localStorage):**
-   - API कुंजियां केवल उपयोगकर्ता के ब्राउज़र के `localStorage` में सुरक्षित रहती हैं।
-   - पासवर्ड इनपुट में "दिखाएं / छिपाएं" बटन।
+3. **Security & LocalStorage:**
+   - API keys are never stored on a server; they remain exclusively in the user's browser `localStorage`.
+   - Password fields feature visibility toggles ("Show / Hide").
 
-4. **उपयोगकर्ता सुविधाएं:**
-   - "रोकें (Stop)" बटन: किसी भी समय प्रक्रिया रोकें, अब तक तैयार कहानी सुरक्षित रहेगी।
-   - "प्रतिलिपि बनाएं (Copy)" बटन: एक क्लिक में कथा क्लिपबोर्ड में कॉपी करें।
-   - "डाउनलोड करें (.txt)" बटन: UTF-8 प्लेन टेक्स्ट फ़ाइल के रूप में डाउनलोड करें।
-   - "नमूना स्क्रिप्ट लोड करें": 3,011 शब्दों की स्क्रिप्ट तुरंत लोड करके परीक्षण करें।
+4. **User Workflow & Utilities:**
+   - **Stop Button:** Halt generation at any time; all paragraphs written so far are kept safe in the reading pane.
+   - **Copy Story Button:** Copies the full generated story to clipboard with visual confirmation.
+   - **Download (.txt) Button:** Downloads the entire story as a UTF-8 text file (`hindi_story.txt`).
+   - **Load Sample Script Button:** Instantly loads a 3,011-word transcript for immediate testing.
 
 ---
 
-## चलाने का तरीका (How to Run)
+## Core Rules for the AI Output (Default System Prompt)
 
-### 1. Python सर्वर प्रारंभ करें
+1. Write only in Hindi (Devanagari). Do not skip any important event, fact, name, date or dialogue.
+2. Remove speaker labels (Narrator:, Host:), timestamps, [music]/[applause] tags and any "role" labels.
+3. No headings, subheadings, bullets or sections (no partitions). Only continuous paragraphs, like a book narrative.
+4. Start exactly where the script starts and follow the same sequence. Remove repetition but keep the flow.
+5. Do not add any introduction, conclusion, advice or commentary. Output only the story text.
+
+---
+
+## How to Run
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Start the Python Server
 ```bash
 python app.py
 ```
-सर्वर `http://127.0.0.1:5000` पर प्रारंभ होगा।
+The server will start at `http://127.0.0.1:5000`.
 
-### 2. ब्राउज़र में खोलें
-अपने वेब ब्राउज़र में खोलें:
+### 3. Open in Browser
+Visit:
 ```
 http://127.0.0.1:5000
 ```
 
 ---
 
-## स्वचालित परीक्षण (Automated Tests)
+## Running Automated Tests
 
-स्वचालित परीक्षण सूट चलाने के लिए:
+Run the complete Python test suite anytime with:
 ```bash
 python test_app.py
 ```
-8 परीक्षण स्वतः निष्पादित होते हैं:
-- 5 डिफ़ॉल्ट सिस्टम नियमों की पुष्टि
-- 3,000+ शब्दों की नमूना स्क्रिप्ट सत्यापन
-- 12,000 वर्णों पर बुद्धिमान पैराग्राफ चंकिंग
-- Key 1 विफलता पर Key 2 पर स्वतः पुनः प्रयास और Key 3 राउंड-रॉबिन
-- Flask राउट्स (Index, Sample Script, Error Validation)
+```
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.118s
+
+OK
+```
